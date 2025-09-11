@@ -1,0 +1,87 @@
+<template>
+    <lightning-card title="" icon-name="">
+        <div class="chat-container">
+            <!-- Chat history -->
+            <div class="chat-history">
+                <template for:each={chatHistory} for:item="chat">
+                    <div key={chat.key} class={chat.containerClass}>
+                        <div class="chat-bubble-wrapper">
+                            <template lwc:if={chat.isAgent}>
+                                <div class="agent-avatar">
+                                    <lightning-icon icon-name="utility:agent_astro" size="x-small" alternative-text="Agent"></lightning-icon>
+                                </div>
+                            </template>
+                            <div class={chat.bubbleClass}>
+                                <template lwc:if={chat.isTyping}>
+                                    <div class="typing-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="chat-message-content">
+                                        <div class="chat-message-text">
+                                            {chat.message}
+                                        </div>
+                                        <lightning-button-icon
+                                            icon-name="utility:copy"
+                                            size="x-small"
+                                            alternative-text="Copy message"
+                                            title="Copy message"
+                                            onclick={handleCopyMessage}
+                                            data-message={chat.message}
+                                            class="copy-button">
+                                        </lightning-button-icon>
+                                    </div>
+                                    <div class="chat-timestamp">
+                                        {chat.timestamp}
+                                    </div>
+                                </template>
+                            </div>
+                            <template lwc:if={chat.isUser}>
+                                <div class="user-avatar">
+                                    <lightning-icon icon-name="utility:user" size="x-small" alternative-text="You"></lightning-icon>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- User input -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <lightning-input
+                        type="text"
+                        name="userInput"
+                        value={userInput}
+                        onchange={handleInputChange}
+                        onkeyup={handleKeyUp}
+                        placeholder="Type your message here..."
+                        disabled={isLoading}
+                        class="chat-input"
+                    ></lightning-input>
+                    <lightning-button
+                        icon-name="utility:send"
+                        variant="brand"
+                        onclick={sendMessage}
+                        disabled={isLoading}
+                        alternative-text="Send message"
+                    ></lightning-button>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+    </template>
+ 
+
+
+
+
+
+
+
+
+
+
