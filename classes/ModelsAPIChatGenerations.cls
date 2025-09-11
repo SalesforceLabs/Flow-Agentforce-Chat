@@ -1,7 +1,7 @@
 public with sharing class ModelsAPIChatGenerations {
     // Decorate the method with @AuraEnabled to make it accessible from a Lightning component
     @AuraEnabled
-    public static String createChatGenerations(String input) {
+    public static String createChatGenerations(String input, String modelName) {
         // Deserialize the input JSON string to a list of ChatMessage objects
         List<ChatMessage> messages = (List<ChatMessage>) JSON.deserialize(input, List<ChatMessage>.class);
 
@@ -13,7 +13,7 @@ public with sharing class ModelsAPIChatGenerations {
         aiplatform.ModelsAPI_ChatGenerationsRequest body = new aiplatform.ModelsAPI_ChatGenerationsRequest();
 
         // Specify model
-        request.modelName = 'sfdc_ai__DefaultOpenAIGPT4OmniMini';
+        request.modelName = modelName;
 
         // Create a list to hold chat messages
         List<aiplatform.ModelsAPI_ChatMessageRequest> messagesList = new List<aiplatform.ModelsAPI_ChatMessageRequest>();

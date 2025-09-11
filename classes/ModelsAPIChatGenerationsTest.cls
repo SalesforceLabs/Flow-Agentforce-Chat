@@ -11,7 +11,7 @@ public class ModelsAPIChatGenerationsTest {
         });
 
         // Call the method to test
-        String response = ModelsAPIChatGenerations.createChatGenerations(input);
+        String response = ModelsAPIChatGenerations.createChatGenerations(input, 'sfdc_ai__DefaultGPT4Omni');
 
         // Assert the response
         System.assertNotEquals(null, response, 'Response should not be null');
