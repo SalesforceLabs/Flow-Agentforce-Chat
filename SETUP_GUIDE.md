@@ -1,6 +1,6 @@
 # Flow Agentforce Chat - Post-Installation Setup Guide
 
-This package provides **two distinct AI chat architectures** for different use cases. Choose the implementation that best fits your needs:
+This package provides **three distinct AI interaction architectures** for different use cases. Choose the implementation that best fits your needs:
 
 ## 🏗️ **Architecture Overview**
 
@@ -18,19 +18,28 @@ This package provides **two distinct AI chat architectures** for different use c
 - **Features:** Direct model access, typing simulation, conversation tracking, usage monitoring
 - **Best For:** Simple Q&A, content generation, general AI assistance
 
+### **Option 3: Flow Integration System** (`flowRenderer` + Invocable Actions)
+- **Use Case:** Launch Salesforce Flows within Agentforce and capture their outputs
+- **Backend:** Native Salesforce Flow execution with output capture system
+- **Setup:** Deploy components and configure Flow actions in Agentforce
+- **Features:** Flow rendering, output capture, session management, automatic retrieval
+- **Best For:** Complex business processes, data collection workflows, multi-step user interactions
+
 ## 🔄 **Quick Comparison**
 
-| Feature | **Agentforce Agent Chat** | **Models API Chat** |
-|---------|---------------------------|---------------------|
-| **Setup Complexity** | Complex (Connected App, OAuth) | Simple (Einstein licensing only) |
-| **Custom Actions** | ✅ Supported via Agent Builder | ❌ Not supported |
-| **Session Management** | ✅ Automatic with persistence | ❌ Stateless |
-| **Streaming Responses** | ✅ Real-time streaming | ❌ Simulated typing effect |
-| **Agent Greeting** | ✅ Custom agent greeting | ❌ Not available |
-| **Usage Tracking** | ❌ Not built-in | ✅ Credit monitoring |
-| **Model Selection** | ❌ Agent-defined | ✅ Configurable |
-| **Business Logic Integration** | ✅ Via Agent actions | ❌ Component-level only |
-| **Best for Beginners** | ❌ Advanced users | ✅ Quick prototyping |
+| Feature | **Agentforce Agent Chat** | **Models API Chat** | **Flow Integration System** |
+|---------|---------------------------|---------------------|------------------------------|
+| **Setup Complexity** | Complex (Connected App, OAuth) | Simple (Einstein licensing only) | Medium (Flow deployment + actions) |
+| **Custom Actions** | ✅ Supported via Agent Builder | ❌ Not supported | ✅ Full Flow capabilities |
+| **Session Management** | ✅ Automatic with persistence | ❌ Stateless | ✅ Session-based output tracking |
+| **Streaming Responses** | ✅ Real-time streaming | ❌ Simulated typing effect | ❌ Flow-based interaction |
+| **Agent Greeting** | ✅ Custom agent greeting | ❌ Not available | ❌ Flow-dependent |
+| **Usage Tracking** | ❌ Not built-in | ✅ Credit monitoring | ✅ Session and output tracking |
+| **Model Selection** | ❌ Agent-defined | ✅ Configurable | ❌ Not applicable |
+| **Business Logic Integration** | ✅ Via Agent actions | ❌ Component-level only | ✅ Full Salesforce Flow capabilities |
+| **Data Collection** | ❌ Limited | ❌ Limited | ✅ Complex forms and workflows |
+| **Output Capture** | ❌ Not built-in | ✅ Conversation outputs | ✅ Structured Flow outputs |
+| **Best for Beginners** | ❌ Advanced users | ✅ Quick prototyping | ✅ Familiar Flow developers |
 
 ---
 
@@ -143,6 +152,26 @@ Update the default Agent ID in the component:
 
 ---
 
+### **For Flow Integration System**
+
+#### 1. Deploy Flow Components (Required for Flow integration)
+
+The Flow Integration System requires no additional configuration - all components are included in the package:
+
+**Components Included:**
+- **`flowRenderer`** - LWC for rendering Flows in Agentforce
+- **Flow Action classes** - Invocable methods for Flow management
+- **Output handling system** - Automatic capture and retrieval
+
+**Verification Steps:**
+1. Go to **Setup → Flows**
+2. Confirm the following Invocable Actions are available:
+   - "Launch Flow as Input" (`FlowActionWithOutputs`)
+   - "Retrieve Flow Outputs" (`FlowOutputRetriever`) 
+   - "Auto Retrieve Flow Outputs by Session" (`AutoFlowOutputRetriever`)
+
+---
+
 ### **For Models API Chat Implementation**
 
 #### 1. Einstein Licensing (Required for `flowAgentforceChat`)
@@ -185,6 +214,12 @@ The package includes these Remote Site Settings (no action needed):
 1. Run the test class: `ModelsAPIChatGenerationsTest`
 2. Verify Einstein licensing is active in your org
 3. Test the `flowAgentforceChat` component in a Flow or Lightning App
+
+### **For Flow Integration System:**
+1. Run the test classes: `FlowDetailsTest`, `FlowOutputHandlerTest`, `FlowOutputRetrieverTest`
+2. Verify all Flow action classes are accessible from Flow Builder
+3. Create a simple test Flow and verify it renders in the `flowRenderer` component
+4. Test Flow output capture by completing a Flow with output variables
 
 ### **Common Tests:**
 - Run `ChatMessageTest` for message wrapper functionality
@@ -239,22 +274,66 @@ The package includes these Remote Site Settings (no action needed):
 - Flow integration for conversation output
 - Customizable UI elements
 
+### **`flowRenderer` Component**
+
+**When to Use:**
+- Launch Salesforce Flows within Agentforce interactions
+- Collect structured data through Flow screens
+- Execute complex business processes with user interaction
+- Capture and process Flow outputs automatically
+
+**Target Platforms:**
+- `lightning__AgentforceInput`: For rendering Flows as input components
+- `lightning__AgentforceOutput`: For displaying Flow results
+
+**Key Properties:**
+- `value`: FlowDetails object containing flow configuration
+- `readOnly`: Boolean to control interaction mode
+- `flowOutputsJson`: Captured Flow outputs in JSON format
+
+**Features:**
+- **Flow Rendering**: Renders any Salesforce Flow within Agentforce
+- **Session Management**: Tracks each Flow execution with unique session IDs
+- **Output Capture**: Automatically captures all Flow output variables
+- **Output Storage**: Stores outputs for later retrieval by Agents
+- **Event Handling**: Dispatches events for Flow completion and output storage
+- **Error Handling**: Graceful error handling with partial output capture
+
+**Flow Execution Lifecycle:**
+1. **Initialize**: Flow loads with input variables (if provided)
+2. **Execute**: User interacts with Flow screens
+3. **Complete**: Flow finishes (status: FINISHED or FINISHED_SCREEN)
+4. **Capture**: Component automatically captures all output variables
+5. **Store**: Outputs stored with session ID for retrieval
+6. **Notify**: Events dispatched to notify Agent of completion
+
 ---
 
 ## 🏗️ **Architecture Deep Dive**
 
 ### **Backend Classes:**
+
+#### **Chat Implementations:**
 - **`AgentforceAgentController`** - Manages Einstein Agent API interactions, OAuth, and session handling
 - **`ModelsAPIChatGenerations`** - Handles direct Models API integration using aiplatform.ModelsAPI
 - **`ChatMessage`** - Universal message wrapper class for both implementations
 
+#### **Flow Integration System:**
+- **`FlowOutputHandler`** - Core class for storing and retrieving Flow outputs with caching
+- **`FlowActionWithOutputs`** - Invocable method that launches Flows with session tracking
+- **`FlowOutputRetriever`** - Retrieves stored Flow outputs by key or session ID  
+- **`AutoFlowOutputRetriever`** - Advanced retrieval with automatic formatting and session lookup
+- **`FlowDetails`** - Data transfer object containing Flow configuration and metadata
+
 ### **Authentication & API Access:**
 - **Agentforce Agent:** Custom OAuth implementation with Client Credentials Flow
 - **Models API:** Built-in Salesforce authentication with Einstein licensing
+- **Flow Integration:** Native Salesforce authentication (no additional setup required)
 
 ### **Data Flow:**
 - **Agentforce Agent:** Component → Controller → Einstein Agent API → Streaming Response
 - **Models API:** Component → Controller → aiplatform.ModelsAPI → Direct Response
+- **Flow Integration:** Agent Action → FlowRenderer → Native Flow → Output Capture → Storage → Retrieval
 
 ## 🔍 Troubleshooting
 
@@ -303,6 +382,38 @@ The package includes these Remote Site Settings (no action needed):
 - Verify message format is correct (role/message structure)
 - Check debug logs for API call details
 
+### **Flow Integration System Issues:**
+
+**Flow not rendering in `flowRenderer`:**
+- Verify the Flow exists and is active
+- Check that `FlowDetails` object has correct `flowApiName`
+- Ensure the Flow has at least one Screen element
+- Verify component targets include `lightning__AgentforceInput`
+
+**Flow outputs not being captured:**
+- Ensure Flow has output variables defined
+- Check that variables are marked as "Available for output" 
+- Verify Flow completes with status FINISHED or FINISHED_SCREEN
+- Check browser console for capture errors
+
+**"Session not found" when retrieving outputs:**
+- Verify session ID was properly generated and stored
+- Check that outputs were stored before attempting retrieval
+- Ensure session ID format matches: `FlowApiName_Timestamp_UserId`
+- Note: Cache is user-session specific and temporary
+
+**Invocable Actions not available in Flow Builder:**
+- Refresh Flow Builder page after package deployment
+- Verify Apex classes are properly deployed
+- Check that classes have correct `@InvocableMethod` annotations
+- Ensure user has appropriate permissions to access Apex classes
+
+**Flow execution errors:**
+- Check Flow's fault paths and error handling
+- Verify all required input variables are provided
+- Test Flow standalone before using in `flowRenderer`
+- Review Flow debug logs for specific error details
+
 ### **Common Issues:**
 
 **Component not loading:**
@@ -328,6 +439,112 @@ The package includes these Remote Site Settings (no action needed):
 - Monitor `consumedRequests` output to track usage
 - Optimize message history length to reduce token consumption
 - Use appropriate `usageType` setting for your license
+
+### **Flow Integration System:**
+- Use session IDs for grouping related Flow executions
+- Store outputs immediately after Flow completion for best retrieval results
+- Consider implementing custom object storage for persistent output retention
+- Design Flows with clear output variables for optimal data capture
+
+---
+
+## 🎯 **Flow Integration Usage Guide**
+
+The Flow Integration System enables you to launch and interact with Salesforce Flows directly within Agentforce agents. Here's how to implement it:
+
+### **Step 1: Prepare Your Flow**
+
+**Create a Flow with:**
+1. **Input Variables** (optional): Data you want to pass to the Flow
+2. **Screen Elements**: User interface components for interaction  
+3. **Output Variables**: Data you want to capture after completion
+4. **Mark variables** as "Available for output" in Flow Builder
+
+**Example Flow Configuration:**
+```
+Flow Name: Customer_Survey
+Input Variables: 
+  - customerName (Text)
+  - accountId (Text)
+Output Variables:
+  - surveyScore (Number)
+  - feedback (Text)
+  - completedDate (Date)
+```
+
+### **Step 2: Configure Agent Action**
+
+**In Agentforce Agent Builder:**
+1. Add a new action using "Launch Flow as Input"
+2. Configure the action:
+   - **Flow API Name**: `Customer_Survey`
+   - **Flow Label**: "Customer Feedback Survey"
+   - **Input Variables**: `{"customerName": "John Doe", "accountId": "001xx000003DHPh"}`
+3. The system automatically generates a session ID for output tracking
+
+### **Step 3: Flow Execution**
+
+**When triggered by the agent:**
+1. **`flowRenderer`** component loads the specified Flow
+2. User interacts with Flow screens
+3. Upon completion, outputs are automatically captured
+4. Session ID links the execution to retrievable outputs
+
+### **Step 4: Retrieve Outputs**
+
+**Use one of three retrieval methods:**
+
+**Method 1: Auto Retrieve by Session**
+```
+Action: "Auto Retrieve Flow Outputs by Session"
+Input: Session ID from Step 2
+Output: Formatted, human-readable results
+```
+
+**Method 2: Structured Retrieval**
+```  
+Action: "Retrieve Flow Outputs"
+Input: Output Key or Session ID + Flow API Name
+Output: Raw JSON data for programmatic use
+```
+
+**Method 3: Direct Access**
+- Access outputs immediately via `flowRenderer` events
+- Use for real-time processing within the same agent conversation
+
+### **Best Practices**
+
+**Flow Design:**
+- Include clear field labels and help text
+- Add validation rules for data quality
+- Design mobile-friendly layouts
+- Test Flows standalone before Agentforce integration
+
+**Output Variables:**
+- Use descriptive variable names
+- Mark all desired outputs as "Available for output"
+- Consider data types for proper formatting
+- Include timestamps for tracking
+
+**Session Management:**
+- Use custom session IDs for related Flow groups
+- Document session patterns for team consistency
+- Consider output retention requirements
+- Plan for cache limitations (temporary storage)
+
+**Agent Configuration:**
+- Provide clear action descriptions
+- Use meaningful Flow labels
+- Test full end-to-end workflows
+- Monitor output retrieval success rates
+
+### **Common Use Cases**
+
+1. **Data Collection**: Surveys, forms, lead qualification
+2. **Approval Processes**: Multi-step approvals with routing
+3. **Diagnostic Workflows**: Troubleshooting with branching logic
+4. **Configuration**: User preferences, settings management
+5. **Reporting**: Dynamic report generation with user inputs
 
 ---
 
