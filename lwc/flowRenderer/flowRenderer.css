@@ -1,0 +1,147 @@
+/* Flow Renderer Component Styles */
+
+.flow-container {
+    padding: 1rem;
+    background-color: var(--lwc-colorBackgroundAlt, #fafaf9);
+    border-radius: 0.25rem;
+}
+
+.flow-header {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--lwc-colorTextDefault, #181818);
+}
+
+.no-flow-message {
+    color: var(--lwc-colorTextWeak, #706e6b);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Flow content styling */
+lightning-flow {
+    display: block;
+    width: 100%;
+}
+
+/* Card styling overrides */
+lightning-card {
+    box-shadow: var(--lwc-shadowDefault, 0 2px 2px 0 rgba(0, 0, 0, .10));
+}
+
+
+
+/* Badge styling for flow status */
+lightning-badge {
+    display: inline-flex;
+}
+
+
+
+/* Flow title styling */
+.flow-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--lwc-colorTextDefault, #181818);
+}
+
+/* Flow instruction styling for input mode */
+.flow-instruction {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--lwc-colorTextWeak, #706e6b);
+    font-style: italic;
+}
+
+/* Flow completion message styling */
+.flow-completion-message {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    background-color: #d9f7be;
+    color: #389e0d;
+    border: 1px solid #b7eb8f;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Flow status styling */
+.flow-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.flow-status.status-finished {
+    background-color: #d9f7be;
+    color: #389e0d;
+    border: 1px solid #b7eb8f;
+}
+
+.flow-status.status-error {
+    background-color: #ffebe6;
+    color: #d32f2f;
+    border: 1px solid #ffcccb;
+}
+
+.flow-status.status-finished-screen {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    border: 1px solid #91d5ff;
+}
+
+
+
+/* Flow wrapper */
+.flow-wrapper {
+    margin: 1rem 0;
+}
+
+
+
+/* Error section styling */
+.error-section {
+    margin-top: 1rem;
+}
+
+.error-section .slds-notify {
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.error-section h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.error-section p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Loading container */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .flow-container {
+        padding: 0.5rem;
+    }
+    
+
+
+    
+
+}

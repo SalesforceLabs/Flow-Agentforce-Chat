@@ -1,0 +1,52 @@
+<template>
+    <!-- Flow Container -->
+    <div class="flow-container">
+        
+        <!-- Flow Header -->
+        <div class="flow-header">
+            <h2 class="flow-title">{flowTitle}</h2>
+            <template if:false={flowCompleted}>
+                <p class="flow-instruction">Please fill in the information below to continue:</p>
+            </template>
+            <template if:true={flowCompleted}>
+                <div class="flow-completion-message">
+                    ✅ Completed successfully! Your responses have been captured.
+                </div>
+            </template>            
+        </div>
+        
+
+        <!-- Flow Component -->
+        <template if:true={flowApiName}>
+            <div class="flow-wrapper">
+                <lightning-flow
+                    flow-api-name={flowApiName}
+                    flow-input-variables={flowInputVariables}
+                    onstatuschange={handleStatusChange}>
+                </lightning-flow>
+            </div>
+        </template>
+        
+
+        <!-- Error Display -->
+        <template if:true={flowError}>
+            <div class="error-section">
+                <div class="slds-notify slds-notify_alert slds-alert_error">
+                    <h2>Flow Error</h2>
+                    <p>{flowError}</p>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner 
+                    alternative-text="Loading flow..." 
+                    size="medium">
+                </lightning-spinner>
+            </div>
+        </template>
+        
+    </div>
+</template>
