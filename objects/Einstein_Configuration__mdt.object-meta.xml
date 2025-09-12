@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Configuration settings for Einstein API integration. These settings can be customized by subscribers in managed packages.</description>
+    <label>Einstein Configuration</label>
+    <pluralLabel>Einstein Configurations</pluralLabel>
+    <visibility>Public</visibility>
+    <fields>
+        <fullName>Client_Id__c</fullName>
+        <description>Einstein API Client ID - Configure with Connected App Client ID</description>
+        <externalId>false</externalId>
+        <fieldManageability>SubscriberControlled</fieldManageability>
+        <label>Client ID</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Client_Secret__c</fullName>
+        <description>Einstein API Client Secret - Configure with Connected App Secret</description>
+        <externalId>false</externalId>
+        <fieldManageability>SubscriberControlled</fieldManageability>
+        <label>Client Secret</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Auth_Endpoint__c</fullName>
+        <description>Einstein API Auth Endpoint - Configure with your org URL</description>
+        <externalId>false</externalId>
+        <fieldManageability>SubscriberControlled</fieldManageability>
+        <label>Auth Endpoint</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+</CustomObject>
