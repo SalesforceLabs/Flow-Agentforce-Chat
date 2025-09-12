@@ -1,0 +1,5 @@
+{
+  "title" : "Flow Response",
+  "description" : "Lightning Type for displaying Salesforce Flow results",
+  "lightning:type" : "@apexClassType/c__FlowDetails"
+}
