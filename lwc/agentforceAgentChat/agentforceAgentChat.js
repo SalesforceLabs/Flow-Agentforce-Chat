@@ -11,6 +11,9 @@ export default class AgentforceAgentChat extends LightningElement {
     @api bypassUser;
     @api conversationHistory = '';
     @api lastAgentMessage = '';
+    @api defaultMessage = '';
+    @api autoStart = false;
+    @api autoStartDelayMs = 2000;
 
     @track userInput = '';
     @track chatHistory = [];
@@ -20,14 +23,50 @@ export default class AgentforceAgentChat extends LightningElement {
     _key = 0;
     _sessionId = null;
     _sequenceId = 1;
+    _autoStartTimeout;
+
+    // Getter for the input placeholder
+    get inputPlaceholder() {
+        return this.defaultMessage && !this.autoStart ? this.defaultMessage : 'Type your message here...';
+    }
 
     // When the component is added to the page, start a new session.
     connectedCallback() {
         this.startNewSession();
     }
 
+    // Handle rendering rich text content after each render
+    renderedCallback() {
+        // Use a more specific selector that doesn't rely on the lwc:dom attribute
+        const richTextElements = this.template.querySelectorAll('.chat-message-text[data-rich-text]');
+        console.log('renderedCallback called, found elements:', richTextElements.length);
+        
+        richTextElements.forEach((element, index) => {
+            const richTextHtml = element.dataset.richText;
+            const key = element.dataset.key;
+            
+            console.log(`Element ${index}:`, {
+                key: key,
+                richTextHtml: richTextHtml,
+                currentInnerHTML: element.innerHTML
+            });
+            
+            // Only update if content has changed (prevent infinite loops)
+            if (richTextHtml && element.innerHTML !== richTextHtml) {
+                console.log(`Updating element ${index} with rich text HTML`);
+                element.innerHTML = richTextHtml;
+                
+                // Add a data attribute to track that we've processed this element
+                element.setAttribute('data-processed', 'true');
+            }
+        });
+    }
+
     // When the component is removed, end the session to clean up resources.
     disconnectedCallback() {
+        if (this._autoStartTimeout) {
+            clearTimeout(this._autoStartTimeout);
+        }
         if (this._sessionId) {
             endSession({ sessionId: this._sessionId })
                 .catch(error => {
@@ -47,12 +86,109 @@ export default class AgentforceAgentChat extends LightningElement {
                     this.addMessageToHistory(result.agentGreeting, 'inbound');
                 }
                 this.isLoading = false;
+
+                // If autoStart is enabled and we have a default message, send it automatically after a delay.
+                if (this.autoStart && this.defaultMessage) {
+                    this._autoStartTimeout = setTimeout(() => {
+                        this.userInput = this.defaultMessage;
+                        this.sendMessage();
+                    }, this.autoStartDelayMs);
+                }
             })
             .catch(error => {
                 console.error('Error starting session:', error);
-                this.addMessageToHistory('Error starting session. Please check the Agent ID and your Connected App configuration.', 'error');
+                let errorMessage = 'Error starting session. Please check the Agent ID and your user permissions.';
+                // Prefer the Apex AuraHandledException message if available
+                if (error && error.body && error.body.message) {
+                    errorMessage = error.body.message;
+                } else if (error && error.message) {
+                    errorMessage = error.message;
+                }
+                this.addMessageToHistory(errorMessage, 'error');
                 this.isLoading = false;
             });
+    }
+
+    // Utility function to parse markdown-like syntax into HTML
+    parseRichText(message) {
+        if (!message) return '';
+        
+        let html = message
+            // Escape HTML tags first
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            
+            // Convert markdown-like syntax to HTML
+            // Bold: **text** or __text__
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/__(.*?)__/g, '<strong>$1</strong>')
+            
+            // Italic: *text* or _text_
+            .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+            .replace(/_([^_]+?)_/g, '<em>$1</em>')
+            
+            // Code blocks: ```text```
+            .replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>')
+            
+            // Inline code: `text`
+            .replace(/`([^`]+?)`/g, '<code class="inline-code">$1</code>')
+            
+            // Standard markdown links: [text](url)
+            .replace(/\[([^\]]+?)\]\(([^)]+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            
+            // Alternative link format: "text" (url)
+            .replace(/"([^"]+?)"\s*\(([^)]+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            
+            // Strikethrough: ~~text~~
+            .replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+        // Handle lists properly
+        const lines = html.split('\n');
+        const processedLines = [];
+        let inList = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            
+            // Check if this line is a list item
+            const listMatch = line.match(/^[\s]*[-*]\s+(.+)$/);
+            
+            if (listMatch) {
+                if (!inList) {
+                    processedLines.push('<ul>');
+                    inList = true;
+                }
+                processedLines.push(`<li>${listMatch[1]}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push('</ul>');
+                    inList = false;
+                }
+                processedLines.push(line);
+            }
+        }
+        
+        // Close list if we ended with a list
+        if (inList) {
+            processedLines.push('</ul>');
+        }
+        
+        html = processedLines.join('\n');
+        
+        // Handle line breaks and paragraphs
+        html = html
+            // Double newline becomes paragraph break
+            .replace(/\n\n/g, '</p><p>')
+            // Single line breaks (but not within lists)
+            .replace(/\n(?![<\/])/g, '<br>');
+        
+        // Wrap in paragraph tags if not already wrapped
+        if (html && !html.startsWith('<') && !html.includes('<p>') && !html.includes('<ul>')) {
+            html = '<p>' + html + '</p>';
+        }
+        
+        return html;
     }
 
     // Utility function to add a message to the chat history array.
@@ -86,9 +222,17 @@ export default class AgentforceAgentChat extends LightningElement {
             minute: '2-digit' 
         });
 
+        // Parse message for rich text content
+        const richTextHtml = this.parseRichText(message);
+        
+        // Debug logging
+        console.log('Original message:', message);
+        console.log('Parsed rich text HTML:', richTextHtml);
+        
         this.chatHistory = [...this.chatHistory, { 
             key: this._key++, 
             message: message, 
+            richTextHtml: richTextHtml,
             containerClass: containerClass,
             bubbleClass: bubbleClass,
             isAgent: isAgent,
@@ -243,6 +387,8 @@ export default class AgentforceAgentChat extends LightningElement {
         }
     }
 }
+
+
 
 
 

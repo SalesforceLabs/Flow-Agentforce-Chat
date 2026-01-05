@@ -21,8 +21,7 @@
                                 </template>
                                 <template lwc:else>
                                     <div class="chat-message-content">
-                                        <div class="chat-message-text">
-                                            {chat.message}
+                                        <div class="chat-message-text" lwc:dom="manual" data-rich-text={chat.richTextHtml} data-key={chat.key}>
                                         </div>
                                         <lightning-button-icon
                                             icon-name="utility:copy"
@@ -58,7 +57,7 @@
                         value={userInput}
                         onchange={handleInputChange}
                         onkeyup={handleKeyUp}
-                        placeholder="Type your message here..."
+                        placeholder={inputPlaceholder}
                         disabled={isLoading}
                         class="chat-input"
                     ></lightning-input>
@@ -75,6 +74,8 @@
     </lightning-card>
     </template>
  
+
+
 
 
 
