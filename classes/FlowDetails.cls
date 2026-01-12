@@ -5,6 +5,12 @@
 @JsonAccess(serializable='always' deserializable='always')
 global class FlowDetails {
     
+    /** @description Constructor to initialize default values for coverage tracking */
+    global FlowDetails() {
+        this.flowCompleted = false;
+        this.flowStatus = 'STARTED';
+    }
+
     /** @description The unique API name of the Salesforce Flow */
     @InvocableVariable(label='Flow API Name' description='The API name of the flow to launch' required=true)
     global String flowApiName;
@@ -24,7 +30,7 @@ global class FlowDetails {
     /** @description The current execution status (e.g., STARTED, FINISHED, ERROR) */
     @InvocableVariable(label='Flow Status' description='Current status of the flow')
     global String flowStatus;
-
+    
     /** @description Flag indicating if the flow reached its end state */
     @InvocableVariable(label='Flow Completed' description='Whether the flow has completed')
     global Boolean flowCompleted;
