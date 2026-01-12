@@ -7,7 +7,7 @@ A comprehensive package for integrating Salesforce Agentforce Agents and AI Mode
 The package provides three distinct AI interaction architectures:
 
 ### 1. Agentforce Agent Chat (`flowAgentforceAgentChat`)
-*   **Use Case**: Interact with configured Einstein Agents (Service Agents, Employee Agents, etc.).
+*   **Use Case**: Interact with configured Agentforce Agents (Service Agents, Employee Agents, etc.).
 *   **Backend**: Native Apex Controller (`AgentforceAgentController`).
 *   **Setup**: Zero-config authentication (uses current user session).
 *   **Features**: Real-time streaming, agent greetings, animated joining indicator, configurable auto-start with delay, dynamic placeholders.
@@ -22,29 +22,25 @@ The package provides three distinct AI interaction architectures:
 
 ### 3. Flow Integration System (`flowRenderer`)
 *   **Use Case**: Launch and render Salesforce Flows *inside* Agentforce as interactive components.
-*   **Backend**: Native Flow Engine with automated output capture into the current session.
-*   **Features**: Automated output capture, structured data collection, and direct agent-retrievable outputs.
-*   **Best For**: Complex data collection or business processes within a chat session.
+*   **Backend**: Native Flow Engine.
+*   **Status**: **Beta** (Currently supports UI rendering only; output variable capture planned for GA).
+*   **Features**: Dynamic multi-step UI, full Flow screen support, native Agentforce integration.
+*   **Best For**: Guiding users through complex data collection or business processes visually.
 
 ---
 
 ## 🚀 Quick Setup (New Implementation)
 
-Starting with Version 2.2, the requirement for Connected Apps and Named Credentials has been **removed**. The system now uses native Salesforce-to-Salesforce "Loopback" authentication.
+Starting with Version 2.2, the requirement for Connected Apps and Named Credentials has been **removed**. The system now uses native Salesforce Apex Controllers for all interactions.
 
-### 1. Remote Site Settings
-Ensure your **Org's My Domain URL** is allowed for callouts:
-1.  Go to **Setup > Remote Site Settings**.
-2.  Add a new entry for your org (e.g., `OrgLoopback` -> `https://your-domain.my.salesforce.com`).
-
-### 2. Component Configuration
+### 1. Component Configuration
 When adding the `flowAgentforceAgentChat` component to a Flow or Page:
 *   **Agentforce Agent API Name**: Use the **API Name** of your agent (e.g., `Service_Agent`) instead of the ID.
 *   **Default Starting Message**: (Optional) Text to pre-fill or auto-send.
 *   **Auto-Start**: Set to `True` to send the default message automatically.
 *   **Auto-Start Delay**: (Default 2000ms) Delay before the auto-sent message is triggered.
 
-### 3. Permissions
+### 2. Permissions
 Assign the **Flow Agentforce Chat Access** permission set to all users. Users must also have the standard **Einstein Agent User** permission set assigned by your administrator.
 
 ---
@@ -55,7 +51,7 @@ See the [SETUP_GUIDE.md](SETUP_GUIDE.md) for a detailed breakdown of each implem
 
 ## 🔍 Troubleshooting
 
-*   **401 Unauthorized**: Ensure the user has "Einstein Agent User" permissions and the `OrgLoopback` Remote Site Setting is correct.
+*   **401 Unauthorized**: Ensure the user has the **Flow Agentforce Chat Access** permission set assigned.
 *   **404 Not Found**: Verify you are using the **Agent API Name** (not the 18-character ID).
 *   **Message Formatting**: The Apex controller automatically parses JSON responses (e.g. `{"type":"Text","value":"..."}`) into plain text for the UI.
 

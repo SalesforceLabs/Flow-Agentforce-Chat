@@ -6,7 +6,7 @@ This guide covers the configuration for the three AI implementation options prov
 
 | Feature | **Agentforce Agent Chat** | **Models API Chat** | **Flow Integration** |
 | :--- | :--- | :--- | :--- |
-| **Backend** | Native Invocable Action | Salesforce Models API | Native Flow Engine |
+| **Backend** | Native Apex Controller | Native Apex Controller | Native Flow Engine |
 | **Authentication** | Current User Session | Built-in | Current User Session |
 | **Connected App** | ❌ Not Required | ❌ Not Required | ❌ Not Required |
 | **Use Case** | Persona-based Agents | Direct LLM Interaction | Structured Data Collection |
@@ -18,9 +18,8 @@ This guide covers the configuration for the three AI implementation options prov
 The most common use case. It allows you to embed a full-featured Agentforce agent into a Flow screen.
 
 ### Configuration Steps:
-1.  **Remote Site Setting**: Go to **Setup > Remote Site Settings**. Create a new entry for your org's domain (e.g., `https://my-company.my.salesforce.com`).
-2.  **Permissions**: Assign users the **Flow Agentforce Chat Access** and the standard **Einstein Agent User** permission sets.
-3.  **Agent API Name**: In the Flow/App Builder, set the `agentId` property to the **API Name** of your agent (found in Setup > Agents).
+1.  **Permissions**: Assign users the **Flow Agentforce Chat Access** and the standard **Einstein Agent User** permission sets.
+2.  **Agent API Name**: In the Flow/App Builder, set the `agentId` property to the **API Name** of your agent (found in Setup > Agents).
 
 ### New Features (v2.2):
 *   **Agent Joining Indicator**: Shows an animated "Agent is joining..." message immediately upon session start for better UX.
@@ -42,12 +41,14 @@ Direct interaction with LLMs without an Agent persona.
 
 ## 3. Flow Integration System (`flowRenderer`)
 
-Used to render a Flow inside a chat session and capture its variables.
+Used to render a Salesforce Flow directly inside a chat session as an interactive component. 
+
+> **⚠️ Beta Note**: In the current Beta release, this component is focused on UI rendering. Automated capture of Flow output variables into the agent session is planned for the GA release.
 
 ### Key Components:
 *   **`flowRenderer`**: The UI component that handles the multi-step Flow interaction.
-*   **`FlowDetails`**: Apex class that holds configuration and captured outputs.
-*   **`Launch Flow`**: Agent action to trigger the UI from a conversation.
+*   **`FlowDetails`**: Apex class that holds configuration for the Flow to be rendered.
+*   **`Launch Flow`**: Agent action used to trigger the UI from a conversation.
 
 ---
 
@@ -55,9 +56,8 @@ Used to render a Flow inside a chat session and capture its variables.
 
 ### Authentication Issues
 If you receive a 401 error, verify:
-1.  The user has the **Einstein Agent User** permission set.
-2.  Your org's domain is in **Remote Site Settings**.
-3.  The agent is **Active** in Agent Builder.
+1.  The user has the **Einstein Agent User** permission set and the **Flow Agentforce Chat Access** permission set.
+2.  The agent is **Active** in Agent Builder.
 
 ### ID vs API Name
 The `agentId` field **must** be the API Name (e.g., `Technical_Support_Agent`). If you use the 18-character ID starting with `0Xx`, the call will return a 404 error.
