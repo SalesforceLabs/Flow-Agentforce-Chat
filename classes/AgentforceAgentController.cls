@@ -28,19 +28,13 @@ public with sharing class AgentforceAgentController {
             // Send an initial dummy prompt to trigger the session and get a greeting
             action.setInvocationParameter('userMessage', 'Hello'); 
             
-            List<Invocable.Action.Result> results = action.invoke();
+            List<Invocable.Action.Result> results = Test.isRunningTest() && mockResults != null ? mockResults : action.invoke();
             
             if (results != null && !results.isEmpty() && results[0].isSuccess()) {
                 SessionInfo session = new SessionInfo();
                 Map<String, Object> outputs = results[0].getOutputParameters();
                 session.sessionId = (String) outputs.get('sessionId');
-                session.agentGreeting = formatAgentResponse((String) outputs.get('agentResponse'));
-                
-                // Fallback if no greeting is returned
-                if (String.isBlank(session.agentGreeting)) {
-                    session.agentGreeting = 'Hello! I am your Agentforce assistant. How can I help you?';
-                }
-                
+                session.agentGreeting = getGreetingOrDefault((String) outputs.get('agentResponse'));
                 return session;
             } else {
                 String errorMsg = (results != null && !results.isEmpty()) ? results[0].getErrors()[0].getMessage() : 'Unknown error';
@@ -67,7 +61,7 @@ public with sharing class AgentforceAgentController {
             action.setInvocationParameter('sessionId', sessionId);
             action.setInvocationParameter('userMessage', message);
             
-            List<Invocable.Action.Result> results = action.invoke();
+            List<Invocable.Action.Result> results = Test.isRunningTest() && mockResults != null ? mockResults : action.invoke();
             
             if (results != null && !results.isEmpty() && results[0].isSuccess()) {
                 Map<String, Object> outputs = results[0].getOutputParameters();
@@ -91,12 +85,24 @@ public with sharing class AgentforceAgentController {
         System.debug('Session end requested for: ' + sessionId);
     }
 
+    @TestVisible
+    private static String getGreetingOrDefault(String response) {
+        String formatted = formatAgentResponse(response);
+        if (String.isBlank(formatted)) {
+            return 'Hello! I am your Agentforce assistant. How can I help you?';
+        }
+        return formatted;
+    }
+
+    @TestVisible private static List<Invocable.Action.Result> mockResults;
+
     /**
      * @description Helper to parse JSON agent response if returned in structured format.
      * Agentforce sometimes returns responses as {"type":"Text","value":"..."}.
      * @param response The raw string response from the agent.
      * @return The cleaned message text.
      */
+    @TestVisible
     private static String formatAgentResponse(String response) {
         if (String.isBlank(response)) return '';
         
