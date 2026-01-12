@@ -1,34 +1,46 @@
+/**
+ * @description Test class for ChatMessage.
+ * Verifies property assignment and constructor logic.
+ */
 @isTest
 public class ChatMessageTest {
+    
+    /**
+     * @description Tests the parameterized constructor.
+     */
     @isTest
     static void testChatMessageConstructor() {
-        // Test the parameterized constructor
+        // Arrange
         String role = 'user';
-        String message = 'Hello, how can I help you?';
+        String content = 'Hello, how can I help you?';
 
-        // Create an instance of ChatMessage using the parameterized constructor
-        ChatMessage chatMessage = new ChatMessage(role, message);
+        // Act
+        ChatMessage chatMessage = new ChatMessage(role, content);
 
-        // Assert that the properties are set correctly
+        // Assert
         System.assertEquals(role, chatMessage.role, 'The role should be set correctly.');
-        System.assertEquals(message, chatMessage.message, 'The message should be set correctly.');
+        System.assertEquals(content, chatMessage.content, 'The content should be set correctly.');
+        System.assertNotEquals(null, chatMessage.timestamp, 'The timestamp should be automatically set.');
     }
 
+    /**
+     * @description Tests the default constructor and manual property assignment.
+     */
     @isTest
     static void testChatMessageDefaultConstructor() {
-        // Test the default constructor
+        // Act
         ChatMessage chatMessage = new ChatMessage();
 
-        // Assert that the properties are null by default
+        // Assert
         System.assertEquals(null, chatMessage.role, 'The role should be null by default.');
-        System.assertEquals(null, chatMessage.message, 'The message should be null by default.');
+        System.assertEquals(null, chatMessage.content, 'The content should be null by default.');
+        System.assertNotEquals(null, chatMessage.timestamp, 'The timestamp should be automatically set.');
 
-        // Set the properties manually
+        // Manual assignment
         chatMessage.role = 'assistant';
-        chatMessage.message = 'Sure, I can help you with that.';
+        chatMessage.content = 'Sure, I can help you with that.';
 
-        // Assert that the properties are updated correctly
         System.assertEquals('assistant', chatMessage.role, 'The role should be updated correctly.');
-        System.assertEquals('Sure, I can help you with that.', chatMessage.message, 'The message should be updated correctly.');
+        System.assertEquals('Sure, I can help you with that.', chatMessage.content, 'The content should be updated correctly.');
     }
 }

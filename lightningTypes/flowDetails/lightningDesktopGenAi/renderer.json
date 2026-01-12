@@ -1,0 +1,11 @@
+{
+  "renderer": {
+    "componentOverrides": {
+      "$": {
+        "definition": "c/flowRenderer"
+      }
+    }
+  }
+}
+
+

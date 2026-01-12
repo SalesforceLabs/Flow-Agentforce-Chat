@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Prepares a Screen Flow for rendering within an Agent interaction.</description>
+    <developerName>Launch_Flow</developerName>
+    <invocationTarget>FlowAction</invocationTarget>
+    <invocationTargetType>apex</invocationTargetType>
+    <isConfirmationRequired>false</isConfirmationRequired>
+    <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+    <localDeveloperName>Launch_Flow</localDeveloperName>
+    <masterLabel>Launch Flow</masterLabel>
+    <progressIndicatorMessage>Launching Flow</progressIndicatorMessage>
+</GenAiFunction>

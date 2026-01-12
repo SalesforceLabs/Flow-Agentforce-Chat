@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Flow Agentforce Agent Chat</masterLabel>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="agentId" type="String" label="Agentforce Agent API Name" description="The API Name of the Agentforce Agent to chat with."/>
+            <property name="defaultMessage" type="String" label="Default Starting Message" description="The default message to use as a placeholder or to send automatically."/>
+            <property name="autoStart" type="Boolean" label="Auto-Start Conversation" description="If true, the default message will be sent automatically when the session starts." default="false"/>
+            <property name="autoStartDelayMs" type="Integer" label="Auto-Start Delay (ms)" description="Delay in milliseconds before auto-starting the conversation." default="2000"/>
+            <property name="conversationHistory" type="String" label="Conversation History" description="The full conversation history as a formatted string." role="outputOnly"/>
+            <property name="lastAgentMessage" type="String" label="Last Agent Message" description="The most recent message received from the agent." role="outputOnly"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
