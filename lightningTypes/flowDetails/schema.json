@@ -1,0 +1,7 @@
+{
+  "title": "Flow Details",
+  "description": "Lightning Type for FlowDetails apex type",
+  "lightning:type": "@apexClassType/c__FlowDetails"
+}
+
+

@@ -1,67 +1,66 @@
+/**
+ * @description Controller for direct AI model interaction using the Salesforce Models API.
+ * Provides capabilities for chat completions without an Agentforce agent persona.
+ */
 public with sharing class ModelsAPIChatGenerations {
-    // Decorate the method with @AuraEnabled to make it accessible from a Lightning component
+
+    /**
+     * @description Call the Models API to generate a response based on conversation history.
+     * @param modelName The unique name of the model (e.g., 'sfdc_ai__DefaultGPT4Omni').
+     * @param input JSON-encoded list of chat messages.
+     * @return The text completion from the AI model.
+     */
     @AuraEnabled
-    public static String createChatGenerations(String input) {
-        // Deserialize the input JSON string to a list of ChatMessage objects
-        List<ChatMessage> messages = (List<ChatMessage>) JSON.deserialize(input, List<ChatMessage>.class);
-
-        // Instantiate the API class
-        aiplatform.ModelsAPI modelsAPI = new aiplatform.ModelsAPI();
-
-        // Prepare the request and body objects
-        aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
-        aiplatform.ModelsAPI_ChatGenerationsRequest body = new aiplatform.ModelsAPI_ChatGenerationsRequest();
-
-        // Specify model
-        request.modelName = 'sfdc_ai__DefaultOpenAIGPT4OmniMini';
-
-        // Create a list to hold chat messages
-        List<aiplatform.ModelsAPI_ChatMessageRequest> messagesList = new List<aiplatform.ModelsAPI_ChatMessageRequest>();
-
-        // Loop through the input messages and create message requests
-        for (ChatMessage msg : messages) {
-            aiplatform.ModelsAPI_ChatMessageRequest messageRequest = new aiplatform.ModelsAPI_ChatMessageRequest();
-            messageRequest.content = msg.message != null ? msg.message : ''; // Handle null message
-            messageRequest.role = msg.role != null ? msg.role : 'user'; // Handle null role
-            messagesList.add(messageRequest);
-        }
-
-        // Set the messages in the request body
-        body.messages = messagesList;
-
-        // Set the request body and model name
-        request.body = body;
-
-        String response = '';
-
+    public static String createChatGenerations(String modelName, String input) {
         try {
-            // Call the API and get the response
-            aiplatform.ModelsAPI.createChatGenerations_Response apiResponse = modelsAPI.createChatGenerations(
-                request
-            );
-
-            // Check that we have a non-null response
-            if (
-                apiResponse?.Code200?.generationDetails?.generations != null &&
-                !apiResponse.Code200.generationDetails.generations.isEmpty()
-            ) {
-                // Set the variable from the response
-                response = apiResponse.Code200.generationDetails.generations[0]
-                    .content;
-            } else {
-                // Handle the case where response is null
-                response = 'No content generated';
+            // Build the generation request
+            aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
+            request.modelName = String.isBlank(modelName) ? 'sfdc_ai__DefaultGPT4Omni' : modelName;
+            
+            // Reconstruct the message list from input
+            List<aiplatform.ModelsAPI_ChatMessageRequest> messages = new List<aiplatform.ModelsAPI_ChatMessageRequest>();
+            
+            if (String.isNotBlank(input)) {
+                // The LWC sends an array of objects with { role, message }
+                // We'll deserialize into a list of maps to handle the 'message' vs 'content' key mismatch gracefully
+                List<Object> inputList = (List<Object>) JSON.deserializeUntyped(input);
+                for (Object obj : inputList) {
+                    Map<String, Object> msgMap = (Map<String, Object>) obj;
+                    aiplatform.ModelsAPI_ChatMessageRequest chatMsg = new aiplatform.ModelsAPI_ChatMessageRequest();
+                    
+                    // Handle both 'content' (ChatMessage class) and 'message' (LWC object)
+                    String content = msgMap.containsKey('content') ? (String)msgMap.get('content') : (String)msgMap.get('message');
+                    String role = (String)msgMap.get('role');
+                    
+                    if (String.isNotBlank(content)) {
+                        chatMsg.content = content;
+                        chatMsg.role = String.isBlank(role) ? 'user' : role;
+                        messages.add(chatMsg);
+                    }
+                }
             }
-
-        // Handle error
-        } catch(aiplatform.ModelsAPI.createChatGenerations_ResponseException e) {
-            System.debug('Response code: ' + e.responseCode);
-            System.debug('The following exception occurred: ' + e);
-
-            // Add error to the output
-            response = 'Unable to get a valid response. Error code: ' + e.responseCode;
+            
+            if (messages.isEmpty()) {
+                return 'No input messages provided.';
+            }
+            
+            aiplatform.ModelsAPI_ChatGenerationsRequest body = new aiplatform.ModelsAPI_ChatGenerationsRequest();
+            body.messages = messages;
+            request.body = body;
+            
+            // Invoke the Models API via native system call
+            aiplatform.ModelsAPI modelsAPI = new aiplatform.ModelsAPI();
+            aiplatform.ModelsAPI.createChatGenerations_Response response = modelsAPI.createChatGenerations(request);
+            
+            // Extract and return the completion
+            if (response != null && response.Code200 != null && response.Code200.generationDetails != null && !response.Code200.generationDetails.generations.isEmpty()) {
+                return response.Code200.generationDetails.generations[0].content;
+            }
+            
+            return 'No response generated by the model.';
+        } catch (Exception e) {
+            System.debug('Models API Error: ' + e.getMessage());
+            throw new AuraHandledException('Model interaction failed: ' + e.getMessage());
         }
-
-        return response;
     }
 }

@@ -1,31 +1,53 @@
+/**
+ * @description Test class for ModelsAPIChatGenerations.
+ * Verifies model interaction logic and history reconstruction.
+ */
 @isTest
-public class ModelsAPIChatGenerationsTest {
+private class ModelsAPIChatGenerationsTest {
+    
+    /**
+     * @description Tests the successful generation of a chat response.
+     * Uses HttpCalloutMock to simulate the external AI platform API.
+     */
     @isTest
-    static void testCreateChatGenerations() {
-        // Set the mock callout
+    static void testGenerateChatResponse_Success() {
+        // Arrange
         Test.setMock(HttpCalloutMock.class, new ModelsAPIGenerationHttpCalloutMock());
-
-        // Prepare the input JSON string
-        String input = JSON.serialize(new List<ChatMessage>{
-            new ChatMessage('user', 'Can you give me a recipe for cherry pie?')
-        });
-
-        // Call the method to test
-        String response = ModelsAPIChatGenerations.createChatGenerations(input);
-
-        // Assert the response
-        System.assertNotEquals(null, response, 'Response should not be null');
-        System.assert(response.contains('Can you give me a recipe for cherry pie?'), 'Response should contain the expected content');
+        
+        String modelName = 'test_model';
+        String userPrompt = 'Hello, how are you?';
+        List<ChatMessage> history = new List<ChatMessage>{
+            new ChatMessage('user', 'Hi'),
+            new ChatMessage('assistant', 'Hello!')
+        };
+        String historyJson = JSON.serialize(history);
+        
+        // Act
+        Test.startTest();
+        String result = ModelsAPIChatGenerations.createChatGenerations(modelName, historyJson);
+        Test.stopTest();
+        
+        // Assert
+        System.assertNotEquals(null, result, 'Result should not be null');
+        System.assertEquals('Mock AI response content.', result, 'Result should match mock response');
     }
-
-    // Helper class to simulate the ChatMessage structure
-    public class ChatMessage {
-        public String role;
-        public String message;
-
-        public ChatMessage(String role, String message) {
-            this.role = role;
-            this.message = message;
+    
+    /**
+     * @description Tests error handling when history JSON is malformed.
+     */
+    @isTest
+    static void testGenerateChatResponse_Error() {
+        // Arrange
+        String invalidJson = '{invalid}';
+        
+        // Act & Assert
+        Test.startTest();
+        try {
+            ModelsAPIChatGenerations.createChatGenerations('model', invalidJson);
+            System.assert(false, 'Expected an exception for invalid JSON');
+        } catch (AuraHandledException e) {
+            System.assert(true, 'Caught expected handled exception');
         }
+        Test.stopTest();
     }
 }
